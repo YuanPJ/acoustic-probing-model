@@ -1,0 +1,10 @@
+editdistance
+librosa
+numpy
+pandas
+PyYAML
+scikit-learn
+tensorboard
+torch
+torchaudio
+tqdm
