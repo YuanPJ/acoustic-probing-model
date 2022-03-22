@@ -39,6 +39,15 @@ See more details in [my paper](#Citation) and master thesis.
 3. Probing model training logs (tensorboard) and configurations will be saved in [log](log/) directory
 4. Probing model checkpoints will be saved in [checkpoint](checkpoint/) directory
 
+### Test Probing-by-reconstruction Model
+
+- Run [test_probing.sh](test_probing.sh) with configurations [libri_probing_test_example.yaml](config/libri_probing_test_example.yaml)
+- Specify the name of dataset. You can augment the original LibriSpeech dataset with noises and put it in save/ directory.
+
+    ```bash test_probing.sh your_probing_model_name dataset_name```
+
+- Reconstructed speech waveform files are in save/your_probing_model_name/ directory
+
 ## Citation
 
 ```
