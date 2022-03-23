@@ -43,8 +43,8 @@ parser.add_argument('--no-msg', action='store_true', help='Hide all messages.')
 parser.add_argument('--prep', action='store_true', help='Option for preparing data.')
 parser.add_argument('--lm', action='store_true',
                     help='Option for training RNNLM.')
-parser.add_argument('--tts', action='store_true',
-                    help='Option for training TTS.')
+parser.add_argument('--probing', action='store_true',
+                    help='Option for training probing model.')
 parser.add_argument('--id', action='store_true',
                     help='Option for training speaker identification.')
 parser.add_argument('--amp', action='store_true', help='Option to enable AMP.')
@@ -52,49 +52,45 @@ parser.add_argument('--reserve_gpu', default=0, type=float,
                     help='Option to reserve GPU ram for training.')
 parser.add_argument('--jit', action='store_true',
                     help='Option for enabling jit in pytorch. (feature in development)')
-paras = parser.parse_args()
-setattr(paras, 'gpu', not paras.cpu)
-setattr(paras, 'pin_memory', not paras.no_pin)
-setattr(paras, 'verbose', not paras.no_msg)
-config = yaml.load(open(paras.config, 'r'), Loader=yaml.FullLoader)
 
-random.seed(paras.seed)
-np.random.seed(paras.seed)
-torch.manual_seed(paras.seed)
-if torch.cuda.is_available():
-    torch.cuda.manual_seed_all(paras.seed)
+if __name__ == '__main__':
+    paras = parser.parse_args()
+    setattr(paras, 'gpu', not paras.cpu)
+    setattr(paras, 'pin_memory', not paras.no_pin)
+    setattr(paras, 'verbose', not paras.no_msg)
+    config = yaml.load(open(paras.config, 'r'), Loader=yaml.FullLoader)
 
-# Hack to preserve GPU ram just incase OOM later on server
-if paras.gpu and paras.reserve_gpu > 0:
-    buff = torch.randn(int(paras.reserve_gpu*1e9//4)).cuda()
-    del buff
+    random.seed(paras.seed)
+    np.random.seed(paras.seed)
+    torch.manual_seed(paras.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(paras.seed)
 
-if paras.lm:
-    # Train RNNLM
-    from bin.train_lm import Solver
-    mode = 'train'
-elif paras.prep:
-    from bin.prep import Solver
-    mode = 'train'
-elif paras.tts:
-    from bin.train_tts import Solver
-    mode = 'train'
-elif paras.id:
-    from bin.train_id import Solver
-    mode = 'train'
-else:
-    if paras.test:
-        # Test ASR
-        assert paras.load is None, 'Load option is mutually exclusive to --test'
-        from bin.test_asr import Solver
-        mode = 'test'
+    # Hack to preserve GPU ram just incase OOM later on server
+    if paras.gpu and paras.reserve_gpu > 0:
+        buff = torch.randn(int(paras.reserve_gpu*1e9//4)).cuda()
+        del buff
+
+    if paras.probing:
+        if paras.test:
+            from bin.test_tts import Solver
+            mode = 'test'
+        else:
+            from bin.train_tts import Solver
+            mode = 'train'
     else:
-        # Train ASR
-        from bin.train_asr import Solver
-        mode = 'train'
+        if paras.test:
+            # Test ASR
+            assert paras.load is None, 'Load option is mutually exclusive to --test'
+            from bin.test_asr import Solver
+            mode = 'test'
+        else:
+            # Train ASR
+            from bin.train_asr import Solver
+            mode = 'train'
 
 
-solver = Solver(config, paras, mode)
-solver.load_data()
-solver.set_model()
-solver.exec()
+    solver = Solver(config, paras, mode)
+    solver.load_data()
+    solver.set_model()
+    solver.exec()

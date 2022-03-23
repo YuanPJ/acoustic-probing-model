@@ -4,8 +4,8 @@ data:
     path: 'save/LibriSpeech'              # Path to raw LibriSpeech dataset
     train_split: ['train-clean-100']      # Name of data splits to be used as training set
     dev_split: ['dev-clean']              # Name of data splits to be used as validation set
-    bucketing: True                       # Enable/Disable bucketing 
-    batch_size: 12
+    bucketing: True                       # Enable/Disable bucketing
+    batch_size: 32
     in_memory: 'wave'
   audio:
     num_freq: 1025
@@ -30,11 +30,11 @@ data:
     vocab_file: 'tests/sample_data/subword.model'
 
 hparas:                                   # Experiment hyper-parameters
-  valid_step: 5000
+  valid_step: 100
   curriculum: 0
-  max_step: 350001
+  max_step: 15001
   tf_start: 1.0
-  tf_end: 0.0
+  tf_end: 1.0
   tf_step: 500000
   grad_clip: 5.0
   optimizer:

@@ -4,6 +4,7 @@ numpy
 pandas
 PyYAML
 scikit-learn
+sentencepiece
 tensorboard
 torch
 torchaudio

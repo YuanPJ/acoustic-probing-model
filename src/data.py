@@ -33,13 +33,14 @@ def collect_audio_batch(batch, audio_transform, mode, task):
             feat = audio_transform(b[0])
             # feat may be (mel_sp) or (mel_sp, mel_sp_augmented)
             for f in feat:
-                file.append(str(b[0]).split('/')[-1].split('.')[0])
+                # file.append(str(b[0]).split('/')[-1].split('.')[0])
+                file.append(str(b[0]))
                 audio_feat.append(f)
                 audio_len.append(len(f))
                 text.append(torch.LongTensor(b[1]))
                 spkr_id.append(b[2])
                 # Testing without augmented data
-                if task == 'asr' and mode == 'test':
+                if mode == 'test':
                     break
 
     # Descending audio length within each batch
@@ -74,7 +75,7 @@ def collect_text_batch(batch, mode):
 
 def create_dataset(tokenizer, ascending, name, path, bucketing, batch_size,
                    train_split=None, dev_split=None, test_split=None,
-                   wave_to_feat=None, in_memory=False):
+                   wave_to_feat=None, in_memory=False, test_path=None):
     ''' Interface for creating all kinds of dataset'''
 
     # Recognize corpus
@@ -104,10 +105,10 @@ def create_dataset(tokenizer, ascending, name, path, bucketing, batch_size,
         # Testing model
         mode = 'test'
         # Do not use bucketing for dev set
-        dv_set = Dataset(path, dev_split, tokenizer, 1,
+        dv_set = Dataset(path if test_path is None else test_path, dev_split, tokenizer, batch_size,
                          wave_to_feat=wave_to_feat, in_memory=in_memory)
         # Do not use bucketing for test set
-        tt_set = Dataset(path, test_split, tokenizer, 1,
+        tt_set = Dataset(path if test_path is None else test_path, test_split, tokenizer, batch_size,
                          wave_to_feat=wave_to_feat, in_memory=in_memory)
         # Messages to show
         msg_list = _data_msg(name, path, dev_split.__str__(), dv_set,
